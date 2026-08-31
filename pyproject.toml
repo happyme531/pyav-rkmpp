@@ -2,8 +2,8 @@
 requires = ["setuptools>=77.0", "cython>=3.1.0,<4"]
 
 [project]
-name = "av"
-description = "Pythonic bindings for FFmpeg's libraries."
+name = "pyav-rkmpp"
+description = "PyAV bindings built for ffmpeg-rockchip and Rockchip MPP."
 readme = "README.md"
 license = "BSD-3-Clause"
 authors = [
@@ -15,10 +15,7 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Natural Language :: English",
-    "Operating System :: MacOS :: MacOS X",
-    "Operating System :: POSIX",
-    "Operating System :: Unix",
-    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Cython",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -42,9 +39,9 @@ include = ["av*"]
 version = {attr = "av.about.__version__"}
 
 [project.urls]
-"Bug Tracker" = "https://github.com/PyAV-Org/PyAV/issues"
-"Source Code" = "https://github.com/PyAV-Org/PyAV"
-homepage = "https://pyav.basswood.io"
+"Bug Tracker" = "https://github.com/happyme531/pyav-rkmpp/issues"
+"Source Code" = "https://github.com/happyme531/pyav-rkmpp"
+homepage = "https://github.com/happyme531/pyav-rkmpp"
 
 [project.scripts]
 "pyav" = "av.__main__:main"

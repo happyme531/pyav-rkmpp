@@ -31,6 +31,8 @@
 /msvc-projects
 /src
 /docs/_ffmpeg
+/.rkmpp-build
+/dist-rkmpp
 
 # Testing.
 *.spyderproject

@@ -195,7 +195,7 @@ jobs:
             quay.io/pypa/manylinux_2_31_armv7l bash -ceu '
               for py in /opt/python/cp311-cp311 /opt/python/cp314-cp314t; do
                 echo "::group::$("$py/bin/python" --version)"
-                "$py/bin/pip" install --no-index --find-links /dist av
+                "$py/bin/pip" install --no-index --find-links /dist pyav-rkmpp
                 "$py/bin/python" -m av --version
                 echo "::endgroup::"
               done'

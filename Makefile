@@ -7,7 +7,7 @@ PYTHON := $(PYAV_PYTHON)
 PIP := $(PYAV_PIP)
 
 
-.PHONY: default build clean fate-suite lint test
+.PHONY: default build clean fate-suite lint test rkmpp-wheel rkmpp-smoke
 
 default: build
 
@@ -37,3 +37,9 @@ lint:
 test:
 	$(PIP) install --upgrade cython numpy pillow pytest
 	$(PYTHON) -m pytest
+
+rkmpp-wheel:
+	./scripts/build-rkmpp
+
+rkmpp-smoke:
+	./scripts/smoke-rkmpp

@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+build_root="${RKMPP_BUILD_ROOT:-${project_root}/.rkmpp-build}"
+env_file="${build_root}/env.sh"
+
+if [[ ! -f "${env_file}" ]]; then
+  echo "ERROR: run scripts/build-rkmpp first" >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "${env_file}"
+
+if [[ ! -e /dev/mpp_service && ! -e /dev/mpp-service ]]; then
+  echo "ERROR: no Rockchip MPP service device is visible" >&2
+  exit 1
+fi
+if [[ ! -e /dev/rga ]]; then
+  echo "ERROR: /dev/rga is not visible" >&2
+  exit 1
+fi
+
+ffmpeg -hide_banner -buildconf 2>&1 | grep -- '--enable-rkmpp' >/dev/null
+ffmpeg -hide_banner -buildconf 2>&1 | grep -- '--enable-rkrga' >/dev/null
+ffmpeg -hide_banner -decoders 2>&1 | grep 'h264_rkmpp' >/dev/null
+ffmpeg -hide_banner -encoders 2>&1 | grep 'h264_rkmpp' >/dev/null
+ffmpeg -hide_banner -filters 2>&1 | grep 'vpp_rkrga' >/dev/null
+
+smoke_dir="${build_root}/smoke"
+mkdir -p "${smoke_dir}"
+sample="${smoke_dir}/h264-rkmpp.mp4"
+
+ffmpeg -hide_banner -loglevel warning -y \
+  -f lavfi -i 'testsrc2=size=1280x720:rate=30' \
+  -frames:v 90 -pix_fmt nv12 -c:v h264_rkmpp -b:v 4M \
+  "${sample}"
+
+ffmpeg -hide_banner -loglevel warning -y \
+  -hwaccel rkmpp -c:v h264_rkmpp -i "${sample}" \
+  -f framemd5 "${smoke_dir}/decoded.framemd5"
+
+ffmpeg -hide_banner -loglevel warning \
+  -hwaccel rkmpp -hwaccel_output_format drm_prime \
+  -c:v h264_rkmpp -i "${sample}" \
+  -vf 'vpp_rkrga=w=640:h=360:format=nv12' \
+  -frames:v 30 -f null -
+
+(
+  cd "${build_root}"
+  "${PYAV_RKMPP_PYTHON}" "${project_root}/examples/basics/rkmpp_decode.py" \
+    "${sample}" --frames 16 --download
+  "${PYAV_RKMPP_PYTHON}" "${project_root}/examples/basics/rkmpp_rtmp.py" \
+    "${sample}" "${smoke_dir}/pyav-rkmpp.flv" \
+    --frames 30
+)
+
+ffprobe -v error -select_streams v:0 \
+  -show_entries stream=codec_name,width,height \
+  -of default=nw=1 "${smoke_dir}/pyav-rkmpp.flv"
+
+echo "RKMPP smoke test passed: ${smoke_dir}"

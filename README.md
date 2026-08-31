@@ -1,6 +1,55 @@
 PyAV
 ====
 
+pyav-rkmpp fork
+----------------
+
+This fork adds explicit Rockchip MPP decoder selection for
+[`happyme531/ffmpeg-rockchip`](https://github.com/happyme531/ffmpeg-rockchip).
+It is based on PyAV 18.1 and FFmpeg 8.1, pinned to ffmpeg-rockchip commit
+[`de4b44643eaf55ed21cf7d02ae22a00c18579c9a`](https://github.com/happyme531/ffmpeg-rockchip/commit/de4b44643eaf55ed21cf7d02ae22a00c18579c9a).
+
+The distribution name is `pyav-rkmpp`, while the Python import remains `av`.
+It cannot be installed alongside upstream's `av` distribution in one environment.
+
+```bash
+pip install pyav-rkmpp
+```
+
+On the RK3588 board, build a shared ffmpeg-rockchip runtime and a thin ARM64 wheel:
+
+```bash
+make rkmpp-wheel
+make rkmpp-smoke
+```
+
+The build stays under `.rkmpp-build/` and writes the wheel plus matching shared
+runtime to `dist-rkmpp/`; it does not replace the system FFmpeg. The API extension is:
+
+```python
+from av.codec.hwaccel import HWAccel
+
+hwaccel = HWAccel("rkmpp", allow_software_fallback=False)
+container = av.open(
+    "input.mp4",
+    video_decoder="h264_rkmpp",
+    hwaccel=hwaccel,
+)
+```
+
+See `examples/basics/rkmpp_decode.py` for decoding and
+`examples/basics/rkmpp_rtmp.py` for video-only RTMP publishing. The RTMP example
+uses a zero-copy DRM PRIME decode/encode path by default, requires an explicit
+destination, and does not implement reconnect or queue policy.
+
+Release builds run on GitHub's ARM64 runner. A separate x64 publishing job uploads
+the repaired ARM64 wheel to PyPI using Trusted Publishing; no x64 wheel is built.
+See [`RELEASING_RKMPP.md`](RELEASING_RKMPP.md) for the one-time PyPI and GitHub
+configuration and the release procedure.
+
+Upstream project
+----------------
+
 PyAV is a Pythonic binding for the [FFmpeg][ffmpeg] libraries. We aim to provide all the power and control of the underlying library, but manage the gritty details as much as possible.
 
 ---
