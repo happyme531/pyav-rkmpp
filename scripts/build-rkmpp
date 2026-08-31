@@ -15,6 +15,10 @@ wheel_pattern='pyav_rkmpp-*.whl'
 
 ffmpeg_repo="${FFMPEG_ROCKCHIP_REPO:-https://github.com/happyme531/ffmpeg-rockchip.git}"
 ffmpeg_ref="${FFMPEG_ROCKCHIP_REF:-de4b44643eaf55ed21cf7d02ae22a00c18579c9a}"
+mpp_repo="${RKMPP_REPO:-https://github.com/nyanmisaka/mpp.git}"
+mpp_ref="${RKMPP_REF:-a9380ef333102ac318628f83b5f7a460d377749e}"
+rga_repo="${RKRGA_REPO:-https://github.com/emcd39/rga.git}"
+rga_ref="${RKRGA_REF:-1d330cc28551943bed3380261a5a9c6fbd58ff53}"
 jobs="${JOBS:-$(getconf _NPROCESSORS_ONLN)}"
 
 # The host and board expose the same shared tree with different numeric owners.
@@ -77,6 +81,37 @@ fi
 git -C "${ffmpeg_source}" fetch --depth 1 origin "${ffmpeg_ref}"
 git -C "${ffmpeg_source}" checkout --detach --force FETCH_HEAD
 
+prepare_dependency() {
+  local repo="$1"
+  local ref="$2"
+  local destination="$3"
+
+  if [[ -d "${destination}/.git" ]] \
+    && [[ "$(git -C "${destination}" rev-parse HEAD)" == "${ref}" ]]; then
+    return
+  fi
+  if [[ -d "${destination}/.git" ]] \
+    && [[ -n "$(git -C "${destination}" status --porcelain --untracked-files=no)" ]]; then
+    echo "ERROR: refusing to replace modified dependency checkout: ${destination}" >&2
+    exit 1
+  fi
+  if [[ ! -d "${destination}/.git" ]]; then
+    mkdir -p "${destination}"
+    git -C "${destination}" init
+    git -C "${destination}" remote add origin "${repo}"
+  else
+    git -C "${destination}" remote set-url origin "${repo}"
+  fi
+  git -C "${destination}" fetch --depth 1 origin "${ref}"
+  git -C "${destination}" checkout --detach --force FETCH_HEAD
+}
+
+# Preseed exact GitHub commits because the pinned upstream builder otherwise
+# fetches moving MPP/RGA branches from Gitee, which is unreliable on hosted CI.
+dependency_source_root="${ffmpeg_source}/.ci-build/shared/src"
+prepare_dependency "${mpp_repo}" "${mpp_ref}" "${dependency_source_root}/rkmpp"
+prepare_dependency "${rga_repo}" "${rga_ref}" "${dependency_source_root}/rkrga"
+
 ffmpeg_builder="${ffmpeg_source}/.github/scripts/build_ffmpeg_rockchip.sh"
 isolated_home="${build_root}/build-home"
 mkdir -p "${isolated_home}"
@@ -133,6 +168,8 @@ cp -f "${ffmpeg_source}/dist/ffmpeg-rockchip-shared-"*.tar.gz "${output_dir}/"
   echo "pyav_commit=$(git -C "${project_root}" rev-parse HEAD)"
   echo "pyav_version=${installed_version}"
   echo "ffmpeg_rockchip_commit=$(git -C "${ffmpeg_source}" rev-parse HEAD)"
+  echo "mpp_commit=$(git -C "${dependency_source_root}/rkmpp" rev-parse HEAD)"
+  echo "rga_commit=$(git -C "${dependency_source_root}/rkrga" rev-parse HEAD)"
   echo "python=$(${venv_dir}/bin/python --version 2>&1)"
   echo "architecture=$(uname -m)"
   echo "kernel=$(uname -r)"
