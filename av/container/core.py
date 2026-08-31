@@ -236,6 +236,7 @@ class Container:
         container_options,
         stream_options,
         hwaccel,
+        video_decoder,
         metadata_encoding,
         metadata_errors,
         buffer_size,
@@ -258,6 +259,7 @@ class Container:
         self.options = dict(options or ())
         self.container_options = dict(container_options or ())
         self.stream_options = [dict(x) for x in stream_options or ()]
+        self.video_decoder = video_decoder
 
         self.hwaccel = hwaccel
 
@@ -504,6 +506,7 @@ def open(
     timeout=None,
     io_open=None,
     hwaccel=None,
+    video_decoder=None,
 ):
     """open(file, mode='r', **kwargs)
 
@@ -531,6 +534,8 @@ def open(
         ``options`` is a dictionary of additional options. The callable should return a
         file-like object.
     :param HWAccel hwaccel: Optional settings for hardware-accelerated decoding.
+    :param str video_decoder: Optional decoder name for matching video streams, such
+        as ``"h264_rkmpp"``. Input containers only.
     :rtype: Container
 
     For devices (via ``libavdevice``), pass the name of the device to ``format``,
@@ -583,6 +588,7 @@ def open(
             container_options,
             stream_options,
             hwaccel,
+            video_decoder,
             metadata_encoding,
             metadata_errors,
             buffer_size,
@@ -595,6 +601,8 @@ def open(
         raise ValueError(
             "Provide stream options via Container.add_stream(..., options={})."
         )
+    if video_decoder is not None:
+        raise ValueError("video_decoder is only valid for input containers")
     return OutputContainer(
         _cinit_sentinel,
         file,
@@ -602,6 +610,7 @@ def open(
         options,
         container_options,
         stream_options,
+        None,
         None,
         metadata_encoding,
         metadata_errors,

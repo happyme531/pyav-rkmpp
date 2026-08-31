@@ -18,6 +18,7 @@ class HWDeviceType(IntEnum):
     mediacodec = cast(int, ...)
     vulkan = cast(int, ...)
     d3d12va = cast(int, ...)
+    rkmpp = cast(int, ...)
 
 class HWConfigMethod(IntEnum):
     none = cast(int, ...)

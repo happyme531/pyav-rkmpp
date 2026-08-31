@@ -32,6 +32,7 @@ cdef class Container:
     cdef readonly list stream_options
 
     cdef HWAccel hwaccel
+    cdef object video_decoder
 
     cdef readonly StreamContainer streams
     cdef dict _metadata

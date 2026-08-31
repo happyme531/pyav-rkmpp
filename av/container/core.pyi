@@ -120,6 +120,7 @@ def open(
     timeout: Real | None | tuple[Real | None, Real | None] = None,
     io_open: Callable[..., Any] | None = None,
     hwaccel: HWAccel | None = None,
+    video_decoder: str | None = None,
 ) -> InputContainer: ...
 @overload
 def open(
@@ -135,6 +136,7 @@ def open(
     timeout: Real | None | tuple[Real | None, Real | None] = None,
     io_open: Callable[..., Any] | None = None,
     hwaccel: HWAccel | None = None,
+    video_decoder: str | None = None,
 ) -> InputContainer: ...
 @overload
 def open(
@@ -165,4 +167,5 @@ def open(
     timeout: Real | None | tuple[Real | None, Real | None] = None,
     io_open: Callable[..., Any] | None = None,
     hwaccel: HWAccel | None = None,
+    video_decoder: str | None = None,
 ) -> InputContainer | OutputContainer: ...

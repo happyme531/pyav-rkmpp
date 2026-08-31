@@ -29,6 +29,19 @@ class InputContainer(Container):
         stream: cython.pointer[lib.AVStream]
         codec: cython.pointer[cython.const[lib.AVCodec]]
         codec_context: cython.pointer[lib.AVCodecContext]
+        requested_video_codec: cython.pointer[cython.const[lib.AVCodec]] = cython.NULL
+        requested_video_codec_used: cython.bint = False
+        video_decoder_name: bytes
+
+        if self.video_decoder is not None:
+            if not isinstance(self.video_decoder, str):
+                raise TypeError("video_decoder must be a string")
+            video_decoder_name = self.video_decoder.encode()
+            requested_video_codec = lib.avcodec_find_decoder_by_name(video_decoder_name)
+            if requested_video_codec == cython.NULL:
+                raise ValueError(f"unknown video decoder: {self.video_decoder}")
+            if requested_video_codec.type != lib.AVMEDIA_TYPE_VIDEO:
+                raise ValueError(f"not a video decoder: {self.video_decoder}")
 
         # If we have either the global `options`, or a `stream_options`, prepare
         # a mashup of those options for each stream.
@@ -75,7 +88,15 @@ class InputContainer(Container):
         self.streams = StreamContainer()
         for i in range(self.ptr.nb_streams):
             stream = self.ptr.streams[i]
-            codec = lib.avcodec_find_decoder(stream.codecpar.codec_id)
+            if (
+                requested_video_codec != cython.NULL
+                and stream.codecpar.codec_type == lib.AVMEDIA_TYPE_VIDEO
+                and stream.codecpar.codec_id == requested_video_codec.id
+            ):
+                codec = requested_video_codec
+                requested_video_codec_used = True
+            else:
+                codec = lib.avcodec_find_decoder(stream.codecpar.codec_id)
             if codec:
                 codec_context = lib.avcodec_alloc_context3(codec)
                 err_check(
@@ -91,6 +112,11 @@ class InputContainer(Container):
                 # no decoder is available
                 py_codec_context = None
             self.streams.add_stream(wrap_stream(self, stream, py_codec_context))
+
+        if requested_video_codec != cython.NULL and not requested_video_codec_used:
+            raise ValueError(
+                f"video decoder {self.video_decoder!r} does not match any input stream"
+            )
 
         if (
             self.hwaccel

@@ -25,6 +25,7 @@ class HWDeviceType(IntEnum):
     d3d12va = lib.AV_HWDEVICE_TYPE_D3D12VA
     amf = 13  # FFmpeg >=8
     ohcodec = 14
+    rkmpp = 15  # ffmpeg-rockchip 8.1
     # TODO: When ffmpeg major is changed, check this enum.
 
 

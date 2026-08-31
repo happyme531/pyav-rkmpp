@@ -53,6 +53,45 @@ def make_h264_test_video(path: str) -> None:
 
 
 class TestDecode(TestCase):
+    def test_explicit_video_decoder(self) -> None:
+        with av.open(
+            fate_suite("h264/interlaced_crop.mp4"), video_decoder="h264"
+        ) as container:
+            stream = container.streams.video[0]
+            assert stream.codec_context.codec.name == "h264"
+            assert next(container.decode(stream)).width == 640
+
+    def test_unknown_explicit_video_decoder(self) -> None:
+        with pytest.raises(ValueError, match="unknown video decoder"):
+            av.open(
+                fate_suite("h264/interlaced_crop.mp4"),
+                video_decoder="definitely_not_a_decoder",
+            )
+
+    def test_non_string_explicit_video_decoder(self) -> None:
+        with pytest.raises(TypeError, match="video_decoder must be a string"):
+            av.open(
+                fate_suite("h264/interlaced_crop.mp4"),
+                video_decoder=cast(str, 123),
+            )
+
+    def test_non_video_explicit_video_decoder(self) -> None:
+        with pytest.raises(ValueError, match="not a video decoder"):
+            av.open(fate_suite("h264/interlaced_crop.mp4"), video_decoder="aac")
+
+    def test_mismatched_explicit_video_decoder(self) -> None:
+        with pytest.raises(ValueError, match="does not match any input stream"):
+            av.open(fate_suite("h264/interlaced_crop.mp4"), video_decoder="mpeg4")
+
+    def test_video_decoder_rejected_for_output(self) -> None:
+        with pytest.raises(ValueError, match="only valid for input"):
+            av.open(
+                io.BytesIO(),
+                "w",
+                format="mp4",
+                video_decoder="h264",
+            )
+
     def test_decode_stream_without_codec_context(self) -> None:
         buffer = io.BytesIO()
         with av.open(buffer, "w", format="mp4") as output:
