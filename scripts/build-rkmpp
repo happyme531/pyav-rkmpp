@@ -76,10 +76,12 @@ fi
 git -C "${ffmpeg_source}" fetch --depth 1 origin "${ffmpeg_ref}"
 git -C "${ffmpeg_source}" checkout --detach --force FETCH_HEAD
 
-ffmpeg_builder="${ffmpeg_source}/.github/scripts/build_ffmpeg_rockchip_pyav.sh"
+ffmpeg_builder="${ffmpeg_source}/.github/scripts/build_ffmpeg_rockchip.sh"
+isolated_home="${build_root}/build-home"
+mkdir -p "${isolated_home}"
 
 if [[ "${SKIP_FFMPEG_BUILD:-0}" != "1" || ! -x "${ffmpeg_prefix}/bin/ffmpeg" ]]; then
-  "${ffmpeg_builder}" shared "${jobs}"
+  HOME="${isolated_home}" "${ffmpeg_builder}" shared "${jobs}"
 fi
 
 if [[ ! -x "${ffmpeg_prefix}/bin/ffmpeg" ]]; then
