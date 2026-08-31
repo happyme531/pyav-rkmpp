@@ -41,18 +41,19 @@ a normal Trusted Publisher automatically.
 
 1. Make sure the ARM64 workflow passes on the release commit.
 2. Set `av/about.py` to a new, immutable version such as
-   `18.1.0+rkmpp2`. PyPI never permits replacing files for an existing version.
+   `18.1.0.post2`. PyPI never permits replacing files for an existing version
+   and does not accept local version identifiers containing `+`.
 3. Create and push the matching tag, including the leading `v`:
 
    ```bash
-   git tag -a 'v18.1.0+rkmpp2' -m 'pyav-rkmpp 18.1.0+rkmpp2'
-   git push origin 'v18.1.0+rkmpp2'
+   git tag -a 'v18.1.0.post2' -m 'pyav-rkmpp 18.1.0.post2'
+   git push origin 'v18.1.0.post2'
    ```
 
 4. Publish a GitHub Release for that tag:
 
    ```bash
-   gh release create 'v18.1.0+rkmpp2' --verify-tag --generate-notes
+   gh release create 'v18.1.0.post2' --verify-tag --generate-notes
    ```
 
 Publishing the release triggers `.github/workflows/rkmpp.yml`. Its ARM64 job builds
