@@ -8,6 +8,7 @@ source_root="${build_root}/src"
 ffmpeg_source="${source_root}/ffmpeg-rockchip"
 ffmpeg_prefix="${ffmpeg_source}/.ci-build/shared/prefix"
 venv_dir="${build_root}/venv"
+runtime_venv_dir="${build_root}/runtime-venv"
 output_dir="${project_root}/dist-rkmpp"
 wheel_build_dir="${build_root}/wheel-output"
 wheel_pattern='pyav_rkmpp-*.whl'
@@ -111,16 +112,18 @@ fi
 cp -f "${wheel_source}" "${output_dir}/"
 wheel_path="${output_dir}/$(basename "${wheel_source}")"
 
-"${venv_dir}/bin/python" -m pip install --force-reinstall --no-deps "${wheel_path}"
+rm -rf "${runtime_venv_dir}"
+"${python_bin}" -m venv "${runtime_venv_dir}"
+"${runtime_venv_dir}/bin/python" -m pip install --force-reinstall --no-deps "${wheel_path}"
 
 # Import outside the checkout so Python resolves the installed extension modules
 # instead of the uncompiled pure-Python/Cython source tree.
-installed_version="$(cd "${build_root}" && "${venv_dir}/bin/python" -c 'import av; print(av.__version__)')"
+installed_version="$(cd "${build_root}" && "${runtime_venv_dir}/bin/python" -c 'import av; print(av.__version__)')"
 
 cat >"${build_root}/env.sh" <<EOF
 export PATH='${ffmpeg_prefix}/bin':\"\${PATH}\"
 export LD_LIBRARY_PATH='${ffmpeg_prefix}/lib'\${LD_LIBRARY_PATH:+:\"\${LD_LIBRARY_PATH}\"}
-export PYAV_RKMPP_PYTHON='${venv_dir}/bin/python'
+export PYAV_RKMPP_PYTHON='${runtime_venv_dir}/bin/python'
 export PYAV_RKMPP_FFMPEG_PREFIX='${ffmpeg_prefix}'
 EOF
 
