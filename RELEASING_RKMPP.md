@@ -6,9 +6,19 @@ repository does not need a long-lived PyPI token.
 
 ## One-time GitHub configuration
 
-1. Open `Settings` -> `Environments` in `happyme531/pyav-rkmpp`.
-2. Create an environment named `pypi`.
-3. Restrict deployment to release tags and, when available, require a reviewer.
+1. Open `Settings` -> `Secrets and variables` -> `Actions` in
+   `happyme531/pyav-rkmpp`, then add these repository secrets:
+   - `GITEE_USERNAME`: the Gitee account used to fetch the Rockchip dependencies.
+   - `GITEE_PASSWORD`: preferably a Gitee personal access token, not the account
+     password.
+2. Open `Settings` -> `Environments` and create an environment named `pypi`.
+3. Restrict the `pypi` environment to release tags and, when available, require a
+   reviewer.
+
+The pinned ffmpeg-rockchip build script fetches its MPP and RGA dependencies from
+Gitee. GitHub-hosted runners may be denied anonymous clones, which is why the two
+repository secrets are required. The workflow passes them into the build container
+by name, without writing their values to the command line.
 
 ## One-time PyPI configuration
 
