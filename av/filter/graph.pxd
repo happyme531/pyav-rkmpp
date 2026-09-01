@@ -1,5 +1,6 @@
 cimport libav as lib
 
+from av.codec.hwaccel cimport HWDevice
 from av.filter.context cimport FilterContext
 
 
@@ -7,6 +8,7 @@ cdef class Graph:
     cdef object __weakref__
 
     cdef lib.AVFilterGraph *ptr
+    cdef HWDevice _hw_device
 
     cdef readonly bint configured
     cpdef configure(self, bint auto_buffer=*, bint force=*)

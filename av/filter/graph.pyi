@@ -5,6 +5,7 @@ from av.audio.format import AudioFormat
 from av.audio.frame import AudioFrame
 from av.audio.layout import AudioLayout
 from av.audio.stream import AudioStream
+from av.codec.hwaccel import HWDevice
 from av.video.format import VideoFormat
 from av.video.frame import VideoFrame
 from av.video.stream import VideoStream
@@ -16,7 +17,9 @@ class Graph:
     configured: bool
     threads: int
 
-    def __init__(self) -> None: ...
+    def __init__(self, hw_device: HWDevice | None = None) -> None: ...
+    @property
+    def hw_device(self) -> HWDevice | None: ...
     def configure(self, auto_buffer: bool = True, force: bool = False) -> None: ...
     def link_nodes(self, *nodes: FilterContext) -> Graph: ...
     def add(
@@ -24,7 +27,7 @@ class Graph:
     ) -> FilterContext: ...
     def add_buffer(
         self,
-        template: VideoStream | None = None,
+        template: VideoFrame | VideoStream | None = None,
         width: int | None = None,
         height: int | None = None,
         format: VideoFormat | None = None,
