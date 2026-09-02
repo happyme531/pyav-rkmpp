@@ -28,6 +28,18 @@ We are operating with `semantic versioning <https://semver.org>`_.
     - Bug fixes (PATCH) go here. 
     - $CHANGE by :gh-user:`mikeboers` in (:pr:`1`).
 
+v18.1.0.post2
+--------------
+
+Features:
+
+- Add a public ``HWDevice`` and allow attaching it to a ``Graph`` so filters such as ``hwupload`` and ``scale_rkrga`` can use RKMPP/RKRGA hardware contexts.
+- Add an RKMPP filter example and board tests covering upload, RGA conversion, hardware download, and direct DRM PRIME encoding.
+
+Packaging:
+
+- Publish a ``cp310-abi3`` ARM64 wheel and verify installation on CPython 3.10 through 3.14.
+
 v18.1.0
 -------
 

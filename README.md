@@ -11,6 +11,7 @@ It is based on PyAV 18.1 and FFmpeg 8.1, pinned to ffmpeg-rockchip commit
 
 The distribution name is `pyav-rkmpp`, while the Python import remains `av`.
 It cannot be installed alongside upstream's `av` distribution in one environment.
+The ARM64 `abi3` wheel supports CPython 3.10 and later.
 
 ```bash
 pip install pyav-rkmpp

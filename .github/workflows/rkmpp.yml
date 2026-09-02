@@ -42,7 +42,7 @@ jobs:
             bash -euxo pipefail -c '
               dnf install -y cmake git ninja-build pkgconf-pkg-config
               CFLAGS="-O2 -Wno-error=array-bounds" \
-                PYTHON_BIN=/opt/python/cp311-cp311/bin/python \
+                PYTHON_BIN=/opt/python/cp310-cp310/bin/python \
                 JOBS=4 ./scripts/build-rkmpp
               source .rkmpp-build/env.sh
               .rkmpp-build/venv/bin/python -m pip install \
@@ -55,11 +55,27 @@ jobs:
                 --plat manylinux_2_28_aarch64 \
                 --wheel-dir wheelhouse \
                 dist-rkmpp/pyav_rkmpp-*.whl
-              /opt/python/cp311-cp311/bin/python -m venv /tmp/verify
-              cd /tmp
-              /tmp/verify/bin/pip install /project/wheelhouse/pyav_rkmpp-*.whl
-              unset LD_LIBRARY_PATH
-              /tmp/verify/bin/python /project/scripts/verify-rkmpp-install.py
+              wheels=(/project/wheelhouse/pyav_rkmpp-*-cp310-abi3-manylinux_2_28_aarch64.whl)
+              test "${#wheels[@]}" -eq 1
+              for python_tag in \
+                cp310-cp310 \
+                cp311-cp311 \
+                cp312-cp312 \
+                cp313-cp313 \
+                cp314-cp314
+              do
+                python_bin="/opt/python/${python_tag}/bin/python"
+                test -x "${python_bin}"
+                verify_dir="/tmp/verify-${python_tag}"
+                "${python_bin}" -m venv "${verify_dir}"
+                "${verify_dir}/bin/pip" install "${wheels[0]}"
+                (
+                  cd /tmp
+                  unset LD_LIBRARY_PATH
+                  "${verify_dir}/bin/python" \
+                    /project/scripts/verify-rkmpp-install.py
+                )
+              done
             '
 
       - name: Upload PyPI wheel artifact
