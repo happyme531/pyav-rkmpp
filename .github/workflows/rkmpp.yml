@@ -45,18 +45,33 @@ jobs:
                 PYTHON_BIN=/opt/python/cp310-cp310/bin/python \
                 JOBS=4 ./scripts/build-rkmpp
               source .rkmpp-build/env.sh
+              /opt/python/cp311-cp311/bin/python -m venv /tmp/build-cp311
+              /tmp/build-cp311/bin/python -m pip install \
+                "setuptools==80.9.0" \
+                "Cython==3.1.3" \
+                "wheel==0.45.1"
+              /tmp/build-cp311/bin/python setup.py clean --all
+              /tmp/build-cp311/bin/python -m pip wheel \
+                --no-build-isolation \
+                --no-deps \
+                --wheel-dir dist-rkmpp \
+                .
               .rkmpp-build/venv/bin/python -m pip install \
                 auditwheel "patchelf>=0.14.5"
               export PATH="/project/.rkmpp-build/venv/bin:${PATH}"
               mkdir -p wheelhouse
-              .rkmpp-build/venv/bin/auditwheel show \
-                dist-rkmpp/pyav_rkmpp-*.whl
-              .rkmpp-build/venv/bin/auditwheel repair \
-                --plat manylinux_2_28_aarch64 \
-                --wheel-dir wheelhouse \
-                dist-rkmpp/pyav_rkmpp-*.whl
-              wheels=(/project/wheelhouse/pyav_rkmpp-*-cp310-abi3-manylinux_2_28_aarch64.whl)
-              test "${#wheels[@]}" -eq 1
+              for wheel in dist-rkmpp/pyav_rkmpp-*.whl
+              do
+                .rkmpp-build/venv/bin/auditwheel show "${wheel}"
+                .rkmpp-build/venv/bin/auditwheel repair \
+                  --plat manylinux_2_28_aarch64 \
+                  --wheel-dir wheelhouse \
+                  "${wheel}"
+              done
+              cp310_wheels=(/project/wheelhouse/pyav_rkmpp-*-cp310-cp310-manylinux_2_28_aarch64.whl)
+              abi3_wheels=(/project/wheelhouse/pyav_rkmpp-*-cp311-abi3-manylinux_2_28_aarch64.whl)
+              test "${#cp310_wheels[@]}" -eq 1
+              test "${#abi3_wheels[@]}" -eq 1
               for python_tag in \
                 cp310-cp310 \
                 cp311-cp311 \
@@ -66,9 +81,14 @@ jobs:
               do
                 python_bin="/opt/python/${python_tag}/bin/python"
                 test -x "${python_bin}"
+                if [[ "${python_tag}" == cp310-cp310 ]]; then
+                  wheel="${cp310_wheels[0]}"
+                else
+                  wheel="${abi3_wheels[0]}"
+                fi
                 verify_dir="/tmp/verify-${python_tag}"
                 "${python_bin}" -m venv "${verify_dir}"
-                "${verify_dir}/bin/pip" install "${wheels[0]}"
+                "${verify_dir}/bin/pip" install "${wheel}"
                 (
                   cd /tmp
                   unset LD_LIBRARY_PATH

@@ -38,7 +38,7 @@ Features:
 
 Packaging:
 
-- Publish a ``cp310-abi3`` ARM64 wheel and verify installation on CPython 3.10 through 3.14.
+- Publish a native CPython 3.10 ARM64 wheel plus a ``cp311-abi3`` wheel for CPython 3.11 through 3.14, with installation checks for every supported interpreter.
 
 v18.1.0
 -------

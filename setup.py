@@ -21,10 +21,10 @@ FFMPEG_LIBRARIES = [
     "swresample",
 ]
 
-if sys.implementation.name == "cpython" and (3, 14) > sys.version_info >= (3, 10):
+if sys.implementation.name == "cpython" and (3, 14) > sys.version_info >= (3, 11):
     py_limited_api = True
-    options = {"bdist_wheel": {"py_limited_api": "cp310"}}
-    define_macros = [("Py_LIMITED_API", 0x030A0000)]
+    options = {"bdist_wheel": {"py_limited_api": "cp311"}}
+    define_macros = [("Py_LIMITED_API", 0x030B0000)]
 else:
     py_limited_api = False
     options = {}

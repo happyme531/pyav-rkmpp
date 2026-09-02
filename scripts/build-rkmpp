@@ -34,16 +34,16 @@ fi
 
 python_bin="${PYTHON_BIN:-}"
 if [[ -z "${python_bin}" ]]; then
-  for candidate in python3.13 python3.12 python3.11 /home/firefly/miniconda3/bin/python; do
+  for candidate in python3.13 python3.12 python3.11 python3.10 /home/firefly/miniconda3/bin/python; do
     if (command -v "${candidate}" >/dev/null 2>&1 || [[ -x "${candidate}" ]]) \
-      && "${candidate}" -c 'import sys; raise SystemExit(sys.version_info < (3, 11))'; then
+      && "${candidate}" -c 'import sys; raise SystemExit(sys.version_info < (3, 10))'; then
       python_bin="${candidate}"
       break
     fi
   done
 fi
 if [[ -z "${python_bin}" ]]; then
-  echo "ERROR: PyAV 18.1 requires Python >= 3.11" >&2
+  echo "ERROR: pyav-rkmpp requires Python >= 3.10" >&2
   exit 1
 fi
 
