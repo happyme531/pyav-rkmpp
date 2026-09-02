@@ -45,6 +45,8 @@ jobs:
                 PYTHON_BIN=/opt/python/cp310-cp310/bin/python \
                 JOBS=4 ./scripts/build-rkmpp
               source .rkmpp-build/env.sh
+              export PKG_CONFIG_PATH=
+              export PKG_CONFIG_LIBDIR="${PYAV_RKMPP_FFMPEG_PREFIX}/lib/pkgconfig:${PYAV_RKMPP_FFMPEG_PREFIX}/share/pkgconfig"
               /opt/python/cp311-cp311/bin/python -m venv /tmp/build-cp311
               /tmp/build-cp311/bin/python -m pip install \
                 "setuptools==80.9.0" \
